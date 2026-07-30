@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase, UserProfile } from '../lib/supabase';
-import { LogOut, Package, ShoppingBag, Users, FileText, Truck, Shield } from 'lucide-react';
+import { LogOut, Package, ShoppingBag, Users, FileText, Truck, Shield, ChevronLeft } from 'lucide-react';
+import Inventory from './Inventory';
+import PointOfSale from './PointOfSale';
 
 interface DashboardProps {
   userId: string;
@@ -9,6 +11,7 @@ interface DashboardProps {
 export default function Dashboard({ userId }: DashboardProps) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeModule, setActiveModule] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchProfile() {
@@ -55,11 +58,11 @@ export default function Dashboard({ userId }: DashboardProps) {
 
   // Define modules based on PRD
   const modules = [
-    { name: 'Point of Sale', icon: ShoppingBag, desc: 'Process sales & checkout', allowed: ['owner', 'manager', 'sales'] },
-    { name: 'Inventory', icon: Package, desc: 'Manage catalog & stock', allowed: ['owner', 'manager'] },
-    { name: 'Reports', icon: FileText, desc: 'Sales & performance analytics', allowed: ['owner', 'accountant'] },
-    { name: 'Delivery', icon: Truck, desc: 'Track order fulfillment', allowed: ['owner', 'manager', 'delivery'] },
-    { name: 'Staff & Roles', icon: Users, desc: 'Manage access & audit logs', allowed: ['owner'] },
+    { id: 'pos', name: 'Point of Sale', icon: ShoppingBag, desc: 'Process sales & checkout', allowed: ['owner', 'manager', 'sales'] },
+    { id: 'inventory', name: 'Inventory', icon: Package, desc: 'Manage catalog & stock', allowed: ['owner', 'manager'] },
+    { id: 'reports', name: 'Reports', icon: FileText, desc: 'Sales & performance analytics', allowed: ['owner', 'accountant'] },
+    { id: 'delivery', name: 'Delivery', icon: Truck, desc: 'Track order fulfillment', allowed: ['owner', 'manager', 'delivery'] },
+    { id: 'staff', name: 'Staff & Roles', icon: Users, desc: 'Manage access & audit logs', allowed: ['owner'] },
   ];
 
   const roleLabels: Record<string, string> = {
@@ -70,6 +73,26 @@ export default function Dashboard({ userId }: DashboardProps) {
     accountant: 'Accountant',
   };
 
+  const renderActiveModule = () => {
+    switch (activeModule) {
+      case 'inventory':
+        return <Inventory />;
+      case 'pos':
+        return <PointOfSale />;
+      case 'reports':
+      case 'delivery':
+      case 'staff':
+        return (
+          <div className="flex flex-col items-center justify-center py-24 text-stone-500 border-2 border-dashed border-stone-200 rounded-2xl">
+            <Package className="w-12 h-12 mb-4 text-stone-300" />
+            <p>The {activeModule} module is under construction.</p>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#FDFBF7]">
       {/* Top Navigation */}
@@ -77,9 +100,19 @@ export default function Dashboard({ userId }: DashboardProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-stone-900 rounded-lg flex items-center justify-center">
-                <ShoppingBag className="w-4 h-4 text-white" />
-              </div>
+              {activeModule ? (
+                <button 
+                  onClick={() => setActiveModule(null)}
+                  className="flex items-center gap-1.5 text-stone-500 hover:text-stone-900 transition-colors mr-2"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                  <span className="text-sm font-medium hidden sm:inline">Back</span>
+                </button>
+              ) : (
+                <div className="w-8 h-8 bg-stone-900 rounded-lg flex items-center justify-center">
+                  <ShoppingBag className="w-4 h-4 text-white" />
+                </div>
+              )}
               <span className="font-serif text-xl text-stone-900 tracking-tight">Sandy Collections</span>
             </div>
             
@@ -106,49 +139,56 @@ export default function Dashboard({ userId }: DashboardProps) {
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-10">
-          <h1 className="text-3xl font-medium text-stone-900">Welcome back, {profile?.name?.split(' ')[0]}</h1>
-          <p className="mt-2 text-stone-500">Select a module to manage your store operations.</p>
-        </div>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {activeModule ? (
+          renderActiveModule()
+        ) : (
+          <>
+            <div className="mb-10">
+              <h1 className="text-3xl font-medium text-stone-900">Welcome back, {profile?.name?.split(' ')[0]}</h1>
+              <p className="mt-2 text-stone-500">Select a module to manage your store operations.</p>
+            </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {modules.map((mod) => {
-            const hasAccess = profile?.role && mod.allowed.includes(profile.role);
-            const Icon = mod.icon;
-            
-            return (
-              <div
-                key={mod.name}
-                className={`relative group bg-white p-6 rounded-2xl border transition-all ${
-                  hasAccess 
-                    ? 'border-stone-200 shadow-sm hover:shadow-md hover:border-stone-300 cursor-pointer' 
-                    : 'border-stone-100 bg-stone-50/50 opacity-75 cursor-not-allowed'
-                }`}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`p-3 rounded-xl ${hasAccess ? 'bg-stone-100 text-stone-900' : 'bg-stone-100 text-stone-400'}`}>
-                    <Icon className="w-6 h-6" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {modules.map((mod) => {
+                const hasAccess = profile?.role && mod.allowed.includes(profile.role);
+                const Icon = mod.icon;
+                
+                return (
+                  <div
+                    key={mod.id}
+                    onClick={() => hasAccess && setActiveModule(mod.id)}
+                    className={`relative group bg-white p-6 rounded-2xl border transition-all ${
+                      hasAccess 
+                        ? 'border-stone-200 shadow-sm hover:shadow-md hover:border-stone-300 cursor-pointer' 
+                        : 'border-stone-100 bg-stone-50/50 opacity-75 cursor-not-allowed'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className={`p-3 rounded-xl ${hasAccess ? 'bg-stone-100 text-stone-900' : 'bg-stone-100 text-stone-400'}`}>
+                        <Icon className="w-6 h-6" />
+                      </div>
+                      {!hasAccess && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-stone-100 text-stone-500">
+                          No Access
+                        </span>
+                      )}
+                    </div>
+                    <h3 className={`text-lg font-medium ${hasAccess ? 'text-stone-900' : 'text-stone-500'}`}>
+                      {mod.name}
+                    </h3>
+                    <p className="mt-1 text-sm text-stone-500">
+                      {mod.desc}
+                    </p>
+                    {hasAccess && (
+                      <div className="absolute inset-0 border-2 border-transparent group-hover:border-stone-900/5 rounded-2xl pointer-events-none transition-colors" />
+                    )}
                   </div>
-                  {!hasAccess && (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-stone-100 text-stone-500">
-                      No Access
-                    </span>
-                  )}
-                </div>
-                <h3 className={`text-lg font-medium ${hasAccess ? 'text-stone-900' : 'text-stone-500'}`}>
-                  {mod.name}
-                </h3>
-                <p className="mt-1 text-sm text-stone-500">
-                  {mod.desc}
-                </p>
-                {hasAccess && (
-                  <div className="absolute inset-0 border-2 border-transparent group-hover:border-stone-900/5 rounded-2xl pointer-events-none transition-colors" />
-                )}
-              </div>
-            );
-          })}
-        </div>
+                );
+              })}
+            </div>
+          </>
+        )}
       </main>
     </div>
   );
