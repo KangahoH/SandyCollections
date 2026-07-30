@@ -12,6 +12,7 @@ import Dashboard from './components/Dashboard';
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [devBypass, setDevBypass] = useState(false);
 
   useEffect(() => {
     // Get initial session
@@ -38,9 +39,21 @@ export default function App() {
     );
   }
 
-  if (!session) {
-    return <Auth />;
+  if (!session && !devBypass) {
+    return (
+      <div className="relative">
+        <Auth />
+        <div className="absolute top-4 right-4 z-50">
+          <button 
+            onClick={() => setDevBypass(true)}
+            className="px-4 py-2 bg-stone-100 text-stone-600 text-sm font-medium rounded-lg hover:bg-stone-200 transition-colors shadow-sm"
+          >
+            Bypass Login (Test Mode)
+          </button>
+        </div>
+      </div>
+    );
   }
 
-  return <Dashboard userId={session.user.id} />;
+  return <Dashboard userId={session?.user?.id || 'test-user-id'} />;
 }
