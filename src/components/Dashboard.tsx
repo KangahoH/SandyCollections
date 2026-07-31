@@ -3,6 +3,9 @@ import { supabase, UserProfile } from '../lib/supabase';
 import { LogOut, Package, ShoppingBag, Users, FileText, Truck, Shield, ChevronLeft } from 'lucide-react';
 import Inventory from './Inventory';
 import PointOfSale from './PointOfSale';
+import Reports from './Reports';
+import Delivery from './Delivery';
+import Staff from './Staff';
 
 interface DashboardProps {
   userId: string;
@@ -80,14 +83,11 @@ export default function Dashboard({ userId }: DashboardProps) {
       case 'pos':
         return <PointOfSale />;
       case 'reports':
+        return <Reports />;
       case 'delivery':
+        return <Delivery />;
       case 'staff':
-        return (
-          <div className="flex flex-col items-center justify-center py-24 text-stone-500 border-2 border-dashed border-stone-200 rounded-2xl">
-            <Package className="w-12 h-12 mb-4 text-stone-300" />
-            <p>The {activeModule} module is under construction.</p>
-          </div>
-        );
+        return <Staff />;
       default:
         return null;
     }

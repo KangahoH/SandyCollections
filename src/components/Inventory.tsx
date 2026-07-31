@@ -20,10 +20,10 @@ export default function Inventory() {
     // We'll use mock data for the UI preview while the DB is unseeded.
     setTimeout(() => {
       setProducts([
-        { id: '1', name: 'Summer Breeze Dress', category: 'Dresses', base_price: 45.00, stock_qty: 12 },
-        { id: '2', name: 'Classic Leather Tote', category: 'Bags', base_price: 85.00, stock_qty: 4 },
-        { id: '3', name: 'Gold Loop Earrings', category: 'Jewelry', base_price: 25.00, stock_qty: 0 },
-        { id: '4', name: 'Strappy Evening Heels', category: 'Heels', base_price: 65.00, stock_qty: 8 },
+        { id: '1', name: 'Summer Breeze Dress', category: 'Dresses', base_price: 150000, stock_qty: 12 },
+        { id: '2', name: 'Classic Leather Tote', category: 'Bags', base_price: 350000, stock_qty: 4 },
+        { id: '3', name: 'Gold Loop Earrings', category: 'Jewelry', base_price: 85000, stock_qty: 0 },
+        { id: '4', name: 'Strappy Evening Heels', category: 'Heels', base_price: 250000, stock_qty: 8 },
       ]);
       setLoading(false);
     }, 800);
@@ -96,7 +96,7 @@ export default function Inventory() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-stone-700">
-                      ${product.base_price.toFixed(2)}
+                      UGX {product.base_price.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
